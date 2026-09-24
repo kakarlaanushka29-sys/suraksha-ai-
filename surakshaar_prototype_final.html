@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SURAKSHAAR — AR Industrial Safety Training</title>
+<style>
+  :root{
+    --navy:#0F2B48;
+    --blue:#1E88E5;
+    --green:#2E7D32;
+    --red:#D32F2F;
+    --orange:#FF9800;
+    --orange-dark:#F57C00;
+    --white:#FFFFFF;
+    --bg-soft:#F4F7FB;
+    --ink-1:#101826;
+    --ink-2:#5B6B7F;
+    --line:#E3E9F1;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    font-family:'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(30,136,229,0.10), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(255,152,0,0.10), transparent 45%),
+      var(--navy);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 16px;
+  }
+
+  .page-label{
+    position:fixed;
+    top:20px; left:50%;
+    transform:translateX(-50%);
+    color:rgba(255,255,255,0.75);
+    font-size:13px;
+    letter-spacing:0.4px;
+    text-align:center;
+  }
+
+  /* ---------- PHONE FRAME ---------- */
+  .device{
+    position:relative;
+    width:375px;
+    height:812px;
+    background:#08111f;
+    border-radius:46px;
+    padding:14px;
+    box-shadow:
+      0 40px 80px -20px rgba(0,0,0,0.6),
+      0 0 0 2px rgba(255,255,255,0.04) inset;
+  }
+  .device::before{
+    content:"";
+    position:absolute;
+    top:26px; left:50%;
+    transform:translateX(-50%);
+    width:120px; height:8px;
+    background:#000;
+    border-radius:6px;
+    z-index:50;
+  }
+  .screen-frame{
+    position:relative;
+    width:100%; height:100%;
+    background:var(--white);
+    border-radius:34px;
+    overflow:hidden;
+    box-shadow:0 0 0 1px rgba(255,255,255,0.06) inset;
+  }
+
+  .statusbar{
+    height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 22px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink-1);
+    position:relative;
+    z-index:20;
+  }
+
+  .app{
+    position:relative;
+    width:100%;
+    height:calc(100% - 44px);
+    overflow:hidden;
+  }
+
+  .screen{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    background:var(--bg-soft);
+    opacity:0;
+    transform:translateX(24px);
+    pointer-events:none;
+    transition:opacity .32s ease, transform .32s ease;
+  }
+  .screen.active{
+    opacity:1;
+    transform:translateX(0);
+    pointer-events:auto;
+    z-index:5;
+  }
+
+  .scr-body{
+    flex:1;
+    overflow-y:auto;
+    padding:18px 18px 90px;
+  }
+  .scr-body::-webkit-scrollbar{ width:0; }
+
+  .topbar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:14px 18px;
+    background:var(--white);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar .back{
+    width:30px; height:30px;
+    border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--bg-soft);
+    cursor:pointer;
+    font-size:16px;
+    color:var(--navy);
+    user-select:none;
+  }
+  .topbar .back:active{ transform:scale(0.9); }
+  .topbar h2{ font-size:16px; margin:0; color:var(--navy); font-weight:700; }
+  .topbar .sub{ margin-left:auto; font-size:12px; color:var(--ink-2); font-weight:600; }
+
+  h1,h2,h3,p{ margin:0; }
+
+  .brand-mark{
+    width:38px; height:38px;
+    border-radius:10px;
+    background:linear-gradient(135deg,var(--orange),var(--orange-dark));
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:18px;
+    flex-shrink:0;
+  }
+  .brand-name{ font-size:20px; font-weight:800; color:var(--navy); letter-spacing:0.3px; }
+
+  /* Buttons */
+  .btn{
+    display:flex; align-items:center; justify-content:center;
+    gap:6px;
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+  }
+  .btn:active{ transform:scale(0.97); }
+  .btn-primary{ background:var(--navy); color:#fff; box-shadow:0 8px 18px -6px rgba(15,43,72,0.5); }
+  .btn-primary:hover{ filter:brightness(1.1); }
+  .btn-accent{ background:linear-gradient(135deg,var(--orange),var(--orange-dark)); color:#fff; box-shadow:0 8px 18px -6px rgba(245,124,0,0.55); }
+  .btn-accent:hover{ filter:brightness(1.06); }
+  .btn-outline{ background:#fff; color:var(--navy); border:1.5px solid var(--line); }
+  .btn-outline:hover{ border-color:var(--navy); }
+
+  /* ---------- SCREEN 1 : Language ---------- */
+  #s1 .scr-body{ padding-top:36px; }
+  .lang-globe{
+    width:64px; height:64px; margin:0 auto 14px;
+    border-radius:50%;
+    background:radial-gradient(circle at 30% 30%, #4FA3F0, var(--blue));
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:28px;
+  }
+  .center-title{ text-align:center; font-size:19px; font-weight:800; color:var(--navy); }
+  .center-sub{ text-align:center; font-size:13px; color:var(--ink-2); margin-top:4px; margin-bottom:22px; }
+
+  .option-list{ display:flex; flex-direction:column; gap:10px; margin-bottom:24px; }
+  .option-row{
+    display:flex; align-items:center; gap:12px;
+    padding:13px 14px;
+    background:#fff;
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .option-row.selected{ border-color:var(--blue); background:#EAF3FD; }
+  .flag-chip{
+    width:30px; height:20px;
+    border-radius:3px;
+    background:linear-gradient(180deg,var(--orange) 0 33%, #fff 33% 66%, var(--green) 66% 100%);
+    flex-shrink:0;
+    box-shadow:0 0 0 1px rgba(0,0,0,0.06);
+  }
+  .option-row .lang-en{ font-weight:700; color:var(--ink-1); font-size:14.5px; }
+  .option-row .lang-native{ font-size:12px; color:var(--ink-2); margin-top:1px; }
+  .radio-dot{
+    margin-left:auto;
+    width:19px; height:19px;
+    border-radius:50%;
+    border:2px solid #C7D2E0;
+    position:relative;
+    flex-shrink:0;
+  }
+  .option-row.selected .radio-dot{ border-color:var(--blue); }
+  .option-row.selected .radio-dot::after{ content:""; position:absolute; inset:3px; border-radius:50%; background:var(--blue); }
+
+  /* ---------- SCREEN 2 : Login ---------- */
+  #s2 .scr-body{ padding-top:44px; }
+  .field{ margin-bottom:14px; }
+  .field label{ font-size:12.5px; font-weight:700; color:var(--ink-1); display:block; margin-bottom:6px; }
+  .field-input{ display:flex; align-items:center; gap:8px; border:1.5px solid var(--line); border-radius:11px; padding:12px 13px; background:#fff; }
+  .field-input input{ border:none; outline:none; flex:1; font-size:14px; background:transparent; color:var(--ink-1); }
+  .field-input .ic{ color:var(--ink-2); font-size:15px; }
+  .row-between{ display:flex; align-items:center; justify-content:space-between; margin:14px 0 20px; font-size:12.5px; }
+  .row-between label{ display:flex; align-items:center; gap:6px; color:var(--ink-2); }
+  .forgot{ color:var(--blue); font-weight:700; cursor:pointer; }
+  .divider{ display:flex; align-items:center; gap:10px; margin:22px 0; color:var(--ink-2); font-size:12px; }
+  .divider::before,.divider::after{ content:""; flex:1; height:1px; background:var(--line); }
+  .social-row{ display:flex; gap:12px; }
+  .social-btn{ flex:1; display:flex; align-items:center; justify-content:center; padding:11px; border:1.5px solid var(--line); border-radius:11px; font-weight:700; font-size:13px; color:var(--ink-1); cursor:pointer; gap:8px; background:#fff; }
+  .social-btn:active{ transform:scale(0.97); }
+  .signup-note{ text-align:center; margin-top:20px; font-size:12.5px; color:var(--ink-2); }
+  .signup-note b{ color:var(--blue); cursor:pointer; }
+
+  /* ---------- SCREEN 3 : Dashboard ---------- */
+  .greet-card{ background:linear-gradient(135deg,var(--navy),#173A5E); border-radius:16px; padding:18px; color:#fff; margin-bottom:16px; }
+  .greet-card h2{ font-size:18px; font-weight:800; }
+  .greet-card p{ font-size:12.5px; color:#B9C8DB; margin-top:3px; }
+  .progress-track{ height:8px; border-radius:6px; background:rgba(255,255,255,0.18); margin-top:14px; overflow:hidden; }
+  .progress-fill{ height:100%; background:var(--orange); border-radius:6px; transition:width .6s ease; }
+  .progress-label{ display:flex; justify-content:space-between; font-size:11.5px; margin-top:6px; color:#CBD8E8; }
+
+  .rules-card{ background:#fff; border:1.5px solid var(--line); border-left:4px solid var(--blue); border-radius:14px; padding:14px 16px; margin-bottom:16px; }
+  .rules-card .rh{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .rules-card .rh .ic{ font-size:16px; }
+  .rules-card .rh b{ font-size:13.5px; color:var(--navy); }
+  .rule-item{ display:flex; align-items:flex-start; gap:8px; font-size:12.5px; color:var(--ink-1); padding:5px 0; }
+  .rule-item .num{ width:18px; height:18px; border-radius:5px; background:#EAF3FD; color:var(--blue); font-size:10.5px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+
+  .scan-card{ display:flex; align-items:center; gap:14px; background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:14px; margin-bottom:18px; }
+  .scan-ic{ width:46px; height:46px; border-radius:12px; background:#EAF3FD; color:var(--blue); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .scan-card .txt{ flex:1; }
+  .scan-card .txt b{ font-size:13.5px; color:var(--ink-1); display:block; }
+  .scan-card .txt span{ font-size:11.5px; color:var(--ink-2); }
+  .scan-card .btn-accent{ width:auto; padding:9px 14px; font-size:12.5px; white-space:nowrap; }
+
+  .section-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .section-head h3{ font-size:14.5px; color:var(--navy); font-weight:800; }
+  .section-head span{ font-size:12px; color:var(--blue); font-weight:700; cursor:pointer; }
+
+  .module-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .module-card{ background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:14px; }
+  .module-ic{ width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:17px; margin-bottom:10px; color:#fff; }
+  .module-card b{ font-size:13px; color:var(--ink-1); display:block; }
+  .module-card span{ font-size:11px; color:var(--ink-2); }
+
+  .tabbar{ display:flex; justify-content:space-around; align-items:center; padding:10px 0 8px; background:#fff; border-top:1px solid var(--line); position:absolute; bottom:0; left:0; right:0; font-size:10px; color:var(--ink-2); font-weight:600; }
+  .tabbar .tab{ display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .tabbar .tab.active{ color:var(--blue); }
+  .tabbar .icon-dot{ font-size:16px; }
+
+  /* ---------- SCREEN 4 : AR Scanner ---------- */
+  .ar-view{
+    position:relative; flex:1;
+    background:
+      radial-gradient(circle at 50% 30%, rgba(255,152,0,0.15), transparent 60%),
+      linear-gradient(180deg,#0B1626,#04070C 70%);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  .ar-topbar{ position:absolute; top:0; left:0; right:0; display:flex; align-items:center; gap:10px; padding:14px 18px; z-index:10; background:linear-gradient(180deg, rgba(0,0,0,0.55), transparent); }
+  .ar-topbar h2{ color:#fff; font-size:15px; font-weight:700; }
+  .ar-topbar .back{ background:rgba(255,255,255,0.14); color:#fff; }
+
+  .reticle{ position:relative; width:220px; height:220px; }
+  .corner{ position:absolute; width:34px; height:34px; border-color:var(--orange); }
+  .corner.tl{ top:0; left:0; border-top:4px solid; border-left:4px solid; border-radius:6px 0 0 0;}
+  .corner.tr{ top:0; right:0; border-top:4px solid; border-right:4px solid; border-radius:0 6px 0 0;}
+  .corner.bl{ bottom:0; left:0; border-bottom:4px solid; border-left:4px solid; border-radius:0 0 0 6px;}
+  .corner.br{ bottom:0; right:0; border-bottom:4px solid; border-right:4px solid; border-radius:0 0 6px 0;}
+  .scan-line{ position:absolute; left:6%; right:6%; height:2px; background:linear-gradient(90deg, transparent, var(--orange), transparent); box-shadow:0 0 12px var(--orange); animation:scanmove 2.2s ease-in-out infinite; }
+  @keyframes scanmove{ 0%{ top:8%; } 50%{ top:88%; } 100%{ top:8%; } }
+  .ar-caption{ position:absolute; bottom:118px; left:0; right:0; text-align:center; color:#fff; }
+  .ar-caption .status{ font-size:12.5px; color:#9FD6A8; display:flex; align-items:center; justify-content:center; gap:6px; margin-top:8px;}
+  .ar-caption .status::before{ content:""; width:7px; height:7px; border-radius:50%; background:#3CD164; box-shadow:0 0 8px #3CD164; }
+  .ar-caption h3{ font-size:15px; font-weight:700; letter-spacing:0.3px; }
+  .ar-bottom{ position:absolute; bottom:20px; left:18px; right:18px; }
+
+  /* ---------- SCREEN 5 : AR Training ---------- */
+  .alert-banner{ display:flex; align-items:center; gap:10px; background:var(--red); color:#fff; padding:12px 16px; font-weight:800; font-size:13.5px; }
+  .alert-banner .warn{ font-size:17px; }
+  .scene-mock{ height:190px; margin:16px 18px; border-radius:14px; background: radial-gradient(circle at 70% 20%, rgba(255,152,0,0.35), transparent 55%), linear-gradient(180deg,#233649,#0F2B48); position:relative; overflow:hidden; display:flex; align-items:flex-end; justify-content:center; }
+  .worker-figure{ width:46px; height:96px; margin-bottom:10px; position:relative; }
+  .worker-figure .head{ width:20px; height:20px; border-radius:50%; background:#F4C79A; margin:0 auto; }
+  .worker-figure .hat{ width:26px; height:10px; background:var(--orange-dark); border-radius:6px 6px 0 0; margin:0 auto -4px; }
+  .worker-figure .body{ width:32px; height:44px; background:var(--orange); border-radius:6px; margin:2px auto 0; }
+  .gas-cloud{ position:absolute; top:16px; left:20px; width:60px; height:36px; background:rgba(180,190,150,0.55); border-radius:50%; filter:blur(6px); }
+  .gas-cloud.b{ top:30px; left:70px; width:80px; height:44px; }
+
+  .q-title{ padding:0 18px; font-size:14.5px; font-weight:700; color:var(--ink-1); margin-bottom:12px; }
+  .choice-list{ padding:0 18px; display:flex; flex-direction:column; gap:10px; }
+  .choice-row{ display:flex; align-items:center; gap:12px; background:#fff; border:1.5px solid var(--line); border-radius:12px; padding:13px 14px; cursor:pointer; font-size:13.5px; color:var(--ink-1); font-weight:600; }
+  .choice-row.selected{ border-color:var(--blue); background:#EAF3FD; }
+  .choice-row .radio-dot{ margin-left:auto; }
+
+  /* ---------- SCREEN 6 : Assessment ---------- */
+  .qhead{ display:flex; justify-content:space-between; font-size:12px; color:var(--ink-2); margin-bottom:8px; font-weight:700; }
+  .thin-progress{ height:6px; border-radius:5px; background:var(--line); overflow:hidden; margin-bottom:22px; }
+  .thin-progress .fill{ height:100%; background:var(--orange); border-radius:5px; }
+  .assess-q{ font-size:16.5px; font-weight:800; color:var(--navy); margin-bottom:18px; line-height:1.4; }
+
+  /* ---------- SCREEN 7 : Results ---------- */
+  #s7 .scr-body{ display:flex; flex-direction:column; align-items:center; padding-top:34px; }
+  .trophy{ width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,#FFD873,var(--orange-dark)); display:flex; align-items:center; justify-content:center; font-size:32px; color:#fff; margin-bottom:14px; box-shadow:0 10px 24px -8px rgba(245,124,0,0.6); }
+  .result-title{ font-size:17px; font-weight:800; color:var(--navy); }
+  .result-score{ font-size:44px; font-weight:900; color:var(--green); margin:6px 0 4px; }
+  .result-desc{ font-size:12.5px; color:var(--ink-2); text-align:center; margin-bottom:20px; line-height:1.5; }
+
+  .stats-card{ width:100%; background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:16px; margin-bottom:16px; }
+  .stat-row{ display:flex; justify-content:space-between; padding:8px 0; font-size:13px; color:var(--ink-1); border-bottom:1px solid var(--line); }
+  .stat-row:last-child{ border-bottom:none; }
+  .stat-row b{ color:var(--navy); }
+
+  .level-tag{ display:inline-flex; align-items:center; gap:6px; background:#FFF3E0; color:var(--orange-dark); font-weight:800; font-size:12.5px; padding:8px 14px; border-radius:20px; margin-bottom:22px; }
+
+  /* ---------- SCREEN 8 : Certificate ---------- */
+  .cert-box{ margin:18px; border:2px solid var(--orange); border-radius:16px; padding:22px 18px; text-align:center; position:relative; background: repeating-linear-gradient(135deg, rgba(255,152,0,0.05) 0 10px, transparent 10px 20px), #fffdf8; }
+  .cert-shield{ width:44px; height:44px; margin:0 auto 8px; border-radius:10px; background:linear-gradient(135deg,var(--orange),var(--orange-dark)); display:flex; align-items:center; justify-content:center; color:#fff; font-size:20px; }
+  .cert-brand{ font-size:15px; font-weight:900; color:var(--navy); letter-spacing:1px; }
+  .cert-of{ font-size:9.5px; color:var(--ink-2); letter-spacing:2px; margin-bottom:14px; }
+  .cert-certifies{ font-size:11px; color:var(--ink-2); }
+  .cert-name{ font-size:19px; font-weight:900; color:var(--navy); margin:6px 0; }
+  .cert-course{ font-size:12.5px; font-weight:700; color:var(--ink-1); letter-spacing:0.4px; }
+  .cert-score{ font-size:13px; margin-top:10px; color:var(--ink-1); font-weight:700; }
+  .cert-id{ font-size:10.5px; color:var(--ink-2); margin-top:4px; }
+  .qr-block{ width:74px; height:74px; margin:16px auto 4px; background: repeating-linear-gradient(0deg, #12233A 0 4px, transparent 4px 8px), repeating-linear-gradient(90deg, #12233A 0 4px, transparent 4px 8px); background-blend-mode:multiply; border:2px solid #12233A; border-radius:6px; }
+  .qr-caption{ font-size:9.5px; color:var(--ink-2); }
+  .cert-actions{ display:flex; gap:10px; padding:0 18px; margin-top:6px; }
+
+  /* ---------- SCREEN 9 : Verification ---------- */
+  #s9 .scr-body{ display:flex; flex-direction:column; align-items:center; padding-top:34px; }
+  .check-badge{ width:74px; height:74px; border-radius:50%; background:#E8F5E9; color:var(--green); display:flex; align-items:center; justify-content:center; font-size:34px; margin-bottom:12px; }
+  .verified-title{ font-size:17px; font-weight:800; color:var(--green); margin-bottom:20px; }
+  .detail-table{ width:100%; background:#fff; border:1.5px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:22px; }
+  .detail-row{ display:flex; justify-content:space-between; padding:12px 16px; font-size:13px; border-bottom:1px solid var(--line); }
+  .detail-row:last-child{ border-bottom:none; }
+  .detail-row span:first-child{ color:var(--ink-2); }
+  .detail-row span:last-child{ color:var(--ink-1); font-weight:700; }
+  .status-pill{ background:#E8F5E9; color:var(--green); padding:3px 10px; border-radius:20px; font-size:11.5px; font-weight:800; }
+
+  /* ---------- SCREEN 10 : Admin ---------- */
+  .metric-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+  .metric-card{ border-radius:14px; padding:16px; color:#fff; }
+  .metric-card .num{ font-size:24px; font-weight:900; }
+  .metric-card .lbl{ font-size:11.5px; opacity:0.9; margin-top:2px; }
+  .m-blue{ background:linear-gradient(135deg,var(--blue),#1567B0); }
+  .m-green{ background:linear-gradient(135deg,var(--green),#1B5E20); }
+  .m-orange{ background:linear-gradient(135deg,var(--orange),var(--orange-dark)); }
+  .m-red{ background:linear-gradient(135deg,#E4534B,var(--red)); }
+
+  .perf-row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .perf-row .lbl{ width:92px; font-size:12px; color:var(--ink-1); font-weight:700; }
+  .perf-row .bar{ flex:1; height:8px; border-radius:6px; background:var(--line); overflow:hidden; }
+  .perf-row .bar .fill{ height:100%; border-radius:6px; background:var(--navy); }
+  .perf-row .pct{ width:36px; text-align:right; font-size:11.5px; color:var(--ink-2); font-weight:700; }
+
+  .activity-item{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .activity-item:last-child{ border-bottom:none; }
+  .activity-avatar{ width:32px; height:32px; border-radius:50%; background:#FFE0B2; color:var(--orange-dark); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; }
+  .activity-item .txt b{ font-size:12.5px; color:var(--ink-1); display:block; }
+  .activity-item .txt span{ font-size:11px; color:var(--ink-2); }
+
+  /* ---------- FLOATING ROBOT + MODAL ---------- */
+  .robot-fab{
+    position:absolute; bottom:16px; right:16px; z-index:9999;
+    width:52px; height:52px; border-radius:50%;
+    background:linear-gradient(135deg,var(--blue),#1567B0);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 10px 22px -6px rgba(30,136,229,0.6);
+    cursor:pointer; font-size:24px; color:#fff;
+    animation:fabPulse 2.8s ease-in-out infinite;
+    border:none;
+  }
+  .robot-fab:active{ transform:scale(0.92); }
+  @keyframes fabPulse{ 0%,100%{ box-shadow:0 10px 22px -6px rgba(30,136,229,0.6); } 50%{ box-shadow:0 10px 30px -4px rgba(30,136,229,0.9); } }
+
+  .modal-overlay{
+    position:absolute; inset:0; z-index:1500;
+    background:rgba(8,17,31,0.55);
+    display:flex; align-items:flex-end; justify-content:center;
+    opacity:0; pointer-events:none;
+    transition:opacity .25s ease;
+  }
+  .modal-overlay.open{ opacity:1; pointer-events:auto; }
+  .assist-modal{
+    width:100%; background:#fff; border-radius:22px 22px 0 0;
+    padding:20px 20px 26px;
+    transform:translateY(100%);
+    transition:transform .3s cubic-bezier(.32,.72,0,1);
+    box-shadow:0 -12px 30px rgba(0,0,0,0.25);
+    max-height:80%;
+    overflow-y:auto;
+  }
+  .modal-overlay.open .assist-modal{ transform:translateY(0); }
+  .modal-head{ display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+  .modal-bot-ic{ width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--blue),#1567B0); display:flex; align-items:center; justify-content:center; color:#fff; font-size:19px; flex-shrink:0; }
+  .modal-head h3{ font-size:15px; font-weight:800; color:var(--navy); line-height:1.3; flex:1; }
+  .modal-close{ width:28px; height:28px; border-radius:8px; background:var(--bg-soft); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink-2); flex-shrink:0; font-size:15px; }
+  .modal-greet{ font-size:13px; font-weight:700; color:var(--blue); margin-bottom:10px; }
+  .modal-sub{ font-size:12.5px; color:var(--ink-2); margin-bottom:14px; line-height:1.5; }
+
+  .lang-select-wrap{ margin-bottom:16px; }
+  .lang-select-wrap label{ font-size:11px; font-weight:700; color:var(--ink-2); display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.4px; }
+  .lang-select{
+    width:100%; padding:11px 12px; border:1.5px solid var(--line); border-radius:10px;
+    font-size:13.5px; font-weight:600; color:var(--ink-1); background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6"><path d="M0 0l5 6 5-6z" fill="%235B6B7F"/></svg>') no-repeat right 14px center;
+    appearance:none; -webkit-appearance:none; cursor:pointer;
+  }
+
+  .assist-card{ display:flex; align-items:center; gap:12px; border:1.5px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:10px; }
+  .assist-ic{ width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:15px; color:#fff; flex-shrink:0; }
+  .assist-card b{ font-size:13px; color:var(--ink-1); display:block; }
+  .assist-card span{ font-size:11.5px; color:var(--ink-2); }
+
+  /* Utility */
+  .mt-10{ margin-top:10px; } .mt-16{ margin-top:16px; }
+</style>
+</head>
+<body>
+
+<div class="page-label">SURAKSHAAR — Click through the prototype • Choose a language on Step 1 • Tap the robot for AI Assist</div>
+
+<div class="device">
+  <div class="screen-frame">
+    <div class="statusbar" id="statusbar"><span>9:41</span><span>●●● 🔋</span></div>
+
+    <div class="app" id="app">
+
+      <!-- SCREEN 1: LANGUAGE -->
+      <section class="screen active" id="s1">
+        <div class="scr-body">
+          <div class="lang-globe">🌐</div>
+          <h1 class="center-title" data-i18n="chooseLanguage">Choose Your Language</h1>
+          <p class="center-sub">भाषा चुनें</p>
+          <div class="option-list" id="langList">
+            <div class="option-row selected" data-lang="en"><div class="flag-chip"></div><div><div class="lang-en">English</div></div><div class="radio-dot"></div></div>
+            <div class="option-row" data-lang="hi"><div class="flag-chip"></div><div><div class="lang-en">हिंदी</div><div class="lang-native">Hindi</div></div><div class="radio-dot"></div></div>
+            <div class="option-row" data-lang="sat"><div class="flag-chip"></div><div><div class="lang-en">संथाली</div><div class="lang-native">Santhali</div></div><div class="radio-dot"></div></div>
+            <div class="option-row" data-lang="nag"><div class="flag-chip"></div><div><div class="lang-en">नागपुरी</div><div class="lang-native">Nagpuri</div></div><div class="radio-dot"></div></div>
+            <div class="option-row" data-lang="kho"><div class="flag-chip"></div><div><div class="lang-en">खोरठा</div><div class="lang-native">Khortha</div></div><div class="radio-dot"></div></div>
+            <div class="option-row" data-lang="bn"><div class="flag-chip"></div><div><div class="lang-en">বাংলা</div><div class="lang-native">Bengali</div></div><div class="radio-dot"></div></div>
+          </div>
+          <button class="btn btn-primary" data-i18n="continue" onclick="goTo('s2')">Continue →</button>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: LOGIN -->
+      <section class="screen" id="s2">
+        <div class="scr-body">
+          <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:26px;">
+            <div class="brand-mark" style="width:52px;height:52px;font-size:24px;margin-bottom:12px;">🛡</div>
+            <div class="brand-name">SURAKSHAAR</div>
+          </div>
+          <h2 class="center-title" data-i18n="welcomeBack" style="margin-bottom:2px;">Welcome Back</h2>
+          <p class="center-sub" data-i18n="loginToContinue">Login to continue</p>
+
+          <div class="field">
+            <label data-i18n="emailPhone">Email / Phone</label>
+            <div class="field-input"><span class="ic">✉</span><input type="text" placeholder="revanth.kumar@email.com" value="revanth.kumar@email.com"></div>
+          </div>
+          <div class="field">
+            <label data-i18n="password">Password</label>
+            <div class="field-input"><span class="ic">🔒</span><input type="password" placeholder="••••••••" value="••••••••"><span class="ic">👁</span></div>
+          </div>
+
+          <div class="row-between">
+            <label><input type="checkbox" checked> <span data-i18n="rememberMe">Remember me</span></label>
+            <span class="forgot" data-i18n="forgotPassword">Forgot Password?</span>
+          </div>
+
+          <button class="btn btn-primary" data-i18n="login" onclick="goTo('s3')">Login</button>
+
+          <div class="divider" data-i18n="orText">or</div>
+          <div class="social-row">
+            <div class="social-btn">G Google</div>
+            <div class="social-btn">⊞ Microsoft</div>
+          </div>
+          <p class="signup-note"><span data-i18n="dontHaveAccount">Don't have an account?</span> <b data-i18n="signUp">Sign Up</b></p>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: DASHBOARD -->
+      <section class="screen" id="s3">
+        <div class="scr-body">
+          <div class="greet-card">
+            <h2 data-i18n="greeting">Good Morning, Revanth</h2>
+            <p data-i18n="readyToday">Ready for today's safety training?</p>
+            <div class="progress-track"><div class="progress-fill" style="width:72%;"></div></div>
+            <div class="progress-label"><span data-i18n="yourProgress">Your Safety Progress</span><span>72%</span></div>
+          </div>
+
+          <div class="rules-card">
+            <div class="rh"><span class="ic">📋</span><b data-i18n="preScanTitle">Pre-Scanning Safety Guidelines</b></div>
+            <div class="rule-item"><span class="num">1</span><span data-i18n="rule1">Ensure 360° well-lit surroundings</span></div>
+            <div class="rule-item"><span class="num">2</span><span data-i18n="rule2">Maintain a 2-meter clear safe zone</span></div>
+            <div class="rule-item"><span class="num">3</span><span data-i18n="rule3">Inspect and wear mandatory PPE before scanning</span></div>
+          </div>
+
+          <div class="scan-card">
+            <div class="scan-ic">◈</div>
+            <div class="txt"><b data-i18n="arScannerTitle">AR Safety Scanner</b><span data-i18n="arScannerDesc">Scan your surroundings for training</span></div>
+            <button class="btn btn-accent" data-i18n="scanNow" onclick="goTo('s4')">Scan Now →</button>
+          </div>
+
+          <div class="section-head"><h3 data-i18n="trainingModules">Training Modules</h3><span data-i18n="viewAll">View All</span></div>
+          <div class="module-grid">
+            <div class="module-card"><div class="module-ic" style="background:var(--orange-dark);">⛏</div><b data-i18n="miningSafety">Mining Safety</b><span data-i18n="lessons4">4 lessons</span></div>
+            <div class="module-card"><div class="module-ic" style="background:var(--blue);">🏭</div><b data-i18n="manufacturingSafety">Manufacturing Safety</b><span data-i18n="lessons6">6 lessons</span></div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <div class="tab active"><span class="icon-dot">⌂</span><span data-i18n="tabHome">Home</span></div>
+          <div class="tab"><span class="icon-dot">🎓</span><span data-i18n="tabTraining">Training</span></div>
+          <div class="tab"><span class="icon-dot">📝</span><span data-i18n="tabAssessment">Assessment</span></div>
+          <div class="tab"><span class="icon-dot">🏅</span><span data-i18n="tabCertificates">Certificates</span></div>
+          <div class="tab"><span class="icon-dot">◎</span><span data-i18n="tabProfile">Profile</span></div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: AR SCANNER -->
+      <section class="screen" id="s4">
+        <div class="scr-body" style="padding:0;display:flex;flex-direction:column;">
+          <div class="ar-view">
+            <div class="ar-topbar">
+              <div class="back" onclick="goTo('s3')">←</div>
+              <h2 data-i18n="arScannerHeader">AR Scanner</h2>
+            </div>
+            <div class="reticle">
+              <div class="corner tl"></div><div class="corner tr"></div>
+              <div class="corner bl"></div><div class="corner br"></div>
+              <div class="scan-line"></div>
+            </div>
+            <div class="ar-caption">
+              <h3 data-i18n="scanning">Scanning…</h3>
+              <p style="font-size:11.5px;color:#B9C8DB;margin-top:4px;" data-i18n="moveDevice">Move your device slowly across the environment</p>
+              <div class="status" data-i18n="surfaceDetected">Surface Detected</div>
+            </div>
+            <div class="ar-bottom">
+              <button class="btn btn-accent" data-i18n="startAR" onclick="goTo('s5')">Start AR Experience</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5: AR TRAINING -->
+      <section class="screen" id="s5">
+        <div class="topbar"><div class="back" onclick="goTo('s4')">←</div><h2 data-i18n="miningSafety">Mining Safety</h2><span class="sub">1/5</span></div>
+        <div class="scr-body" style="padding-left:0;padding-right:0;">
+          <div class="alert-banner"><span class="warn">⚠</span> <span data-i18n="gasLeak">GAS LEAK DETECTED</span></div>
+          <div class="scene-mock">
+            <div class="gas-cloud"></div>
+            <div class="gas-cloud b"></div>
+            <div class="worker-figure"><div class="hat"></div><div class="head"></div><div class="body"></div></div>
+          </div>
+          <p class="q-title" data-i18n="whatShouldYouDo">What should you do?</p>
+          <div class="choice-list" id="s5choices">
+            <div class="choice-row" data-v="a"><span data-i18n="continueWorking">Continue working</span><div class="radio-dot"></div></div>
+            <div class="choice-row selected" data-v="b"><span data-i18n="reportEvacuate">Report and evacuate</span><div class="radio-dot"></div></div>
+            <div class="choice-row" data-v="c"><span data-i18n="removePPE">Remove PPE</span><div class="radio-dot"></div></div>
+          </div>
+          <div style="padding:20px 18px 0;">
+            <button class="btn btn-primary" data-i18n="submitAnswer" onclick="goTo('s6')">Submit Answer</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 6: ASSESSMENT -->
+      <section class="screen" id="s6">
+        <div class="topbar"><div class="back" onclick="goTo('s5')">←</div><h2 data-i18n="safetyAssessment">Safety Assessment</h2></div>
+        <div class="scr-body">
+          <div class="qhead"><span data-i18n="questionOf">Question 7 of 10</span><span>70%</span></div>
+          <div class="thin-progress"><div class="fill" style="width:70%;"></div></div>
+          <p class="assess-q" data-i18n="assessQ">What is the correct action during a mine gas leak?</p>
+          <div class="choice-list" id="s6choices" style="padding:0;">
+            <div class="choice-row" data-v="a"><span data-i18n="continueOperation">Continue operation</span><div class="radio-dot"></div></div>
+            <div class="choice-row selected" data-v="b"><span data-i18n="evacuateArea">Evacuate the area</span><div class="radio-dot"></div></div>
+            <div class="choice-row" data-v="c"><span data-i18n="switchOffVentilation">Switch off ventilation</span><div class="radio-dot"></div></div>
+          </div>
+          <div style="margin-top:24px;">
+            <button class="btn btn-primary" data-i18n="nextQuestion" onclick="goTo('s7')">Next Question →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 7: RESULTS -->
+      <section class="screen" id="s7">
+        <div class="scr-body">
+          <div class="trophy">🏆</div>
+          <div class="result-title" data-i18n="trainingComplete">Training Complete!</div>
+          <div class="result-score">86%</div>
+          <p class="result-desc" data-i18n="resultDesc">Excellent Revanth! You have successfully completed the Mining Safety module.</p>
+
+          <div class="stats-card">
+            <div class="stat-row"><span data-i18n="correctAnswers">Correct Answers</span><b>9 / 10</b></div>
+            <div class="stat-row"><span data-i18n="safetyDecisions">Safety Decisions</span><b>8 / 10</b></div>
+            <div class="stat-row"><span data-i18n="timeLabel">Time</span><b>04:32</b></div>
+          </div>
+
+          <div class="level-tag">⭐ <span data-i18n="safetyLevel">Safety Level: ADVANCED</span></div>
+
+          <button class="btn btn-accent" data-i18n="viewCertificate" onclick="goTo('s8')">View Certificate</button>
+          <button class="btn btn-outline mt-10" data-i18n="retakeModule" onclick="goTo('s6')">Retake Module</button>
+        </div>
+      </section>
+
+      <!-- SCREEN 8: CERTIFICATE -->
+      <section class="screen" id="s8">
+        <div class="topbar"><div class="back" onclick="goTo('s7')">←</div><h2 data-i18n="certificateTitle">Certificate</h2></div>
+        <div class="scr-body" style="padding:0;">
+          <div class="cert-box">
+            <div class="cert-shield">🛡</div>
+            <div class="cert-brand">SURAKSHAAR</div>
+            <div class="cert-of" data-i18n="certOf">CERTIFICATE OF SAFETY TRAINING</div>
+            <p class="cert-certifies" data-i18n="certifies">This certifies that</p>
+            <div class="cert-name">REVANTH KUMAR</div>
+            <p class="cert-course"><span data-i18n="hasCompleted">has successfully completed</span><br><span data-i18n="miningCourse">MINING SAFETY AR TRAINING</span></p>
+            <div class="cert-score"><span data-i18n="scoreLabel">Score:</span> 86%</div>
+            <div class="cert-id"><span data-i18n="certIdLabel">Certificate ID:</span> SAR-2026-001245</div>
+            <div class="qr-block"></div>
+            <div class="qr-caption" data-i18n="scanToVerify">Scan to Verify Certificate</div>
+          </div>
+          <div class="cert-actions">
+            <button class="btn btn-primary" data-i18n="downloadCertificate" onclick="goTo('s9')">↓ Download Certificate</button>
+          </div>
+          <div style="padding:10px 18px 0;">
+            <button class="btn btn-outline" data-i18n="share" onclick="goTo('s9')">⇪ Share</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 9: VERIFICATION -->
+      <section class="screen" id="s9">
+        <div class="topbar"><div class="back" onclick="goTo('s8')">←</div><h2 data-i18n="verifyCertificateTitle">Verify Certificate</h2></div>
+        <div class="scr-body">
+          <div class="check-badge">✓</div>
+          <div class="verified-title" data-i18n="verifiedCertificate">Verified Certificate</div>
+          <div class="detail-table">
+            <div class="detail-row"><span data-i18n="certId">Certificate ID</span><span>SAR-2026-001245</span></div>
+            <div class="detail-row"><span data-i18n="trainee">Trainee</span><span>Revanth Kumar</span></div>
+            <div class="detail-row"><span data-i18n="training">Training</span><span data-i18n="miningSafety">Mining Safety</span></div>
+            <div class="detail-row"><span data-i18n="scoreOnly">Score</span><span>86%</span></div>
+            <div class="detail-row"><span data-i18n="issued">Issued</span><span>01 Sep 2026</span></div>
+            <div class="detail-row"><span data-i18n="status">Status</span><span class="status-pill" data-i18n="authentic">Authentic</span></div>
+          </div>
+          <button class="btn btn-primary" data-i18n="adminView" onclick="goTo('s10')">Admin View</button>
+        </div>
+      </section>
+
+      <!-- SCREEN 10: ADMIN DASHBOARD -->
+      <section class="screen" id="s10">
+        <div class="topbar"><span style="font-size:16px;">☰</span><h2 data-i18n="adminDashboard">Admin Dashboard</h2></div>
+        <div class="scr-body">
+          <div class="metric-grid">
+            <div class="metric-card m-blue"><div class="num">1,248</div><div class="lbl" data-i18n="users">Users</div></div>
+            <div class="metric-card m-green"><div class="num">87%</div><div class="lbl" data-i18n="passRate">Pass Rate</div></div>
+            <div class="metric-card m-orange"><div class="num">932</div><div class="lbl" data-i18n="certificates">Certificates</div></div>
+            <div class="metric-card m-red"><div class="num">12</div><div class="lbl" data-i18n="needRetraining">Need Retraining</div></div>
+          </div>
+
+          <div class="section-head"><h3 data-i18n="trainingPerformance">Training Performance</h3></div>
+          <div class="perf-row"><span class="lbl" data-i18n="miningSafety">Mining</span><div class="bar"><div class="fill" style="width:92%;"></div></div><span class="pct">92%</span></div>
+          <div class="perf-row"><span class="lbl" data-i18n="manufacturingSafety">Manufacturing</span><div class="bar"><div class="fill" style="width:84%;"></div></div><span class="pct">84%</span></div>
+          <div class="perf-row"><span class="lbl" data-i18n="emergency">Emergency</span><div class="bar"><div class="fill" style="width:76%;"></div></div><span class="pct">76%</span></div>
+
+          <div class="section-head mt-16"><h3 data-i18n="recentActivity">Recent Activity</h3></div>
+          <div class="activity-item"><div class="activity-avatar">RK</div><div class="txt"><b data-i18n="completedMining">Revanth Kumar completed Mining Safety</b><span data-i18n="hoursAgo2">2 hours ago</span></div></div>
+          <div class="activity-item"><div class="activity-avatar">+</div><div class="txt"><b data-i18n="newUserRegistered">New user registered</b><span data-i18n="hoursAgo5">5 hours ago</span></div></div>
+
+          <button class="btn btn-outline mt-16" data-i18n="resetFlow" onclick="resetFlow()">↺ Reset Flow</button>
+        </div>
+      </section>
+
+      <!-- FLOATING AI ROBOT -->
+      <button class="robot-fab" id="robotFab" aria-label="AI Assistant">🤖</button>
+
+      <!-- ASSISTANT MODAL -->
+      <div class="modal-overlay" id="modalOverlay">
+        <div class="assist-modal" onclick="event.stopPropagation()">
+          <div class="modal-head">
+            <div class="modal-bot-ic">🤖</div>
+            <h3 data-i18n="robotModalTitle">Meet Your AI Safety &amp; Health Assistant</h3>
+            <div class="modal-close" id="modalClose">✕</div>
+          </div>
+          <p class="modal-greet" data-i18n="robotGreeting">Hi Revanth! How can I help you today?</p>
+          <p class="modal-sub" data-i18n="modalSub">Get instant answers, voice help, and health support anytime.</p>
+
+          <div class="lang-select-wrap">
+            <label data-i18n="chatbotLanguageLabel">Chatbot Language</label>
+            <select class="lang-select" id="chatbotLangSelect">
+              <option value="en">English</option>
+              <option value="hi">हिंदी (Hindi)</option>
+              <option value="sat">संथाली (Santhali)</option>
+              <option value="nag">नागपुरी (Nagpuri)</option>
+              <option value="kho">खोरठा (Khortha)</option>
+              <option value="bn">বাংলা (Bengali)</option>
+            </select>
+          </div>
+
+          <div class="assist-card">
+            <div class="assist-ic" style="background:var(--green);">✓</div>
+            <div><b data-i18n="askSafetyQuestions">Ask Safety Questions</b><span data-i18n="askSafetyEx">"How to handle gas leak?"</span></div>
+          </div>
+          <div class="assist-card">
+            <div class="assist-ic" style="background:var(--red);">♥</div>
+            <div><b data-i18n="checkHealth">Check Your Health</b><span data-i18n="checkHealthEx">"I feel dizzy at work"</span></div>
+          </div>
+          <div class="assist-card">
+            <div class="assist-ic" style="background:var(--blue);">🎙</div>
+            <div><b data-i18n="talkAssistant">Talk to Assistant</b><span data-i18n="talkAssistantEx">"Tap the mic and speak"</span></div>
+          </div>
+
+          <button class="btn btn-accent mt-10" id="startChatBtn" data-i18n="startChatting">Start Chatting</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // ==========================================================
+  // TRANSLATION DICTIONARY
+  // ==========================================================
+  const translations = {
+    en: {
+      chooseLanguage:"Choose Your Language", continue:"Continue →",
+      welcomeBack:"Welcome Back", loginToContinue:"Login to continue",
+      emailPhone:"Email / Phone", password:"Password", rememberMe:"Remember me",
+      forgotPassword:"Forgot Password?", login:"Login", orText:"or",
+      dontHaveAccount:"Don't have an account?", signUp:"Sign Up",
+      greeting:"Good Morning, Revanth", readyToday:"Ready for today's safety training?",
+      yourProgress:"Your Safety Progress",
+      preScanTitle:"Pre-Scanning Safety Guidelines",
+      rule1:"Ensure 360° well-lit surroundings",
+      rule2:"Maintain a 2-meter clear safe zone",
+      rule3:"Inspect and wear mandatory PPE before scanning",
+      arScannerTitle:"AR Safety Scanner", arScannerDesc:"Scan your surroundings for training", scanNow:"Scan Now →",
+      trainingModules:"Training Modules", viewAll:"View All",
+      miningSafety:"Mining Safety", manufacturingSafety:"Manufacturing Safety",
+      lessons4:"4 lessons", lessons6:"6 lessons",
+      tabHome:"Home", tabTraining:"Training", tabAssessment:"Assessment", tabCertificates:"Certificates", tabProfile:"Profile",
+      arScannerHeader:"AR Scanner", scanning:"Scanning…",
+      moveDevice:"Move your device slowly across the environment", surfaceDetected:"Surface Detected",
+      startAR:"Start AR Experience",
+      gasLeak:"GAS LEAK DETECTED", whatShouldYouDo:"What should you do?",
+      continueWorking:"Continue working", reportEvacuate:"Report and evacuate", removePPE:"Remove PPE",
+      submitAnswer:"Submit Answer",
+      safetyAssessment:"Safety Assessment", questionOf:"Question 7 of 10",
+      assessQ:"What is the correct action during a mine gas leak?",
+      continueOperation:"Continue operation", evacuateArea:"Evacuate the area", switchOffVentilation:"Switch off ventilation",
+      nextQuestion:"Next Question →",
+      trainingComplete:"Training Complete!",
+      resultDesc:"Excellent Revanth! You have successfully completed the Mining Safety module.",
+      correctAnswers:"Correct Answers", safetyDecisions:"Safety Decisions", timeLabel:"Time",
+      safetyLevel:"Safety Level: ADVANCED",
+      viewCertificate:"View Certificate", retakeModule:"Retake Module",
+      certificateTitle:"Certificate", certOf:"CERTIFICATE OF SAFETY TRAINING", certifies:"This certifies that",
+      hasCompleted:"has successfully completed", miningCourse:"MINING SAFETY AR TRAINING",
+      scoreLabel:"Score:", certIdLabel:"Certificate ID:", scanToVerify:"Scan to Verify Certificate",
+      downloadCertificate:"↓ Download Certificate", share:"⇪ Share",
+      verifyCertificateTitle:"Verify Certificate", verifiedCertificate:"Verified Certificate",
+      certId:"Certificate ID", trainee:"Trainee", training:"Training", scoreOnly:"Score",
+      issued:"Issued", status:"Status", authentic:"Authentic", adminView:"Admin View",
+      adminDashboard:"Admin Dashboard", users:"Users", passRate:"Pass Rate", certificates:"Certificates",
+      needRetraining:"Need Retraining", trainingPerformance:"Training Performance", emergency:"Emergency",
+      recentActivity:"Recent Activity", completedMining:"Revanth Kumar completed Mining Safety",
+      hoursAgo2:"2 hours ago", newUserRegistered:"New user registered", hoursAgo5:"5 hours ago",
+      resetFlow:"↺ Reset Flow",
+      robotModalTitle:"Meet Your AI Safety & Health Assistant",
+      robotGreeting:"Hi Revanth! How can I help you today?",
+      modalSub:"Get instant answers, voice help, and health support anytime.",
+      chatbotLanguageLabel:"Chatbot Language",
+      askSafetyQuestions:"Ask Safety Questions", askSafetyEx:'"How to handle gas leak?"',
+      checkHealth:"Check Your Health", checkHealthEx:'"I feel dizzy at work"',
+      talkAssistant:"Talk to Assistant", talkAssistantEx:'"Tap the mic and speak"',
+      startChatting:"Start Chatting"
+    },
+    hi: {
+      chooseLanguage:"अपनी भाषा चुनें", continue:"आगे बढ़ें →",
+      welcomeBack:"वापसी पर स्वागत है", loginToContinue:"जारी रखने के लिए लॉगिन करें",
+      emailPhone:"ईमेल / फ़ोन", password:"पासवर्ड", rememberMe:"मुझे याद रखें",
+      forgotPassword:"पासवर्ड भूल गए?", login:"लॉगिन करें", orText:"या",
+      dontHaveAccount:"खाता नहीं है?", signUp:"साइन अप करें",
+      greeting:"सुप्रभात, रेवंत", readyToday:"आज की सुरक्षा ट्रेनिंग के लिए तैयार हैं?",
+      yourProgress:"आपकी सुरक्षा प्रगति",
+      preScanTitle:"स्कैनिंग-पूर्व सुरक्षा दिशानिर्देश",
+      rule1:"360° अच्छी रोशनी वाला परिवेश सुनिश्चित करें",
+      rule2:"2-मीटर का सुरक्षित क्षेत्र बनाए रखें",
+      rule3:"स्कैन करने से पहले अनिवार्य PPE जाँचें और पहनें",
+      arScannerTitle:"AR सुरक्षा स्कैनर", arScannerDesc:"ट्रेनिंग के लिए अपने परिवेश को स्कैन करें", scanNow:"अभी स्कैन करें →",
+      trainingModules:"ट्रेनिंग मॉड्यूल", viewAll:"सभी देखें",
+      miningSafety:"खनन सुरक्षा", manufacturingSafety:"विनिर्माण सुरक्षा",
+      lessons4:"4 पाठ", lessons6:"6 पाठ",
+      tabHome:"होम", tabTraining:"ट्रेनिंग", tabAssessment:"मूल्यांकन", tabCertificates:"प्रमाणपत्र", tabProfile:"प्रोफ़ाइल",
+      arScannerHeader:"AR स्कैनर", scanning:"स्कैन हो रहा है…",
+      moveDevice:"अपने डिवाइस को परिवेश में धीरे-धीरे घुमाएँ", surfaceDetected:"सतह मिल गई",
+      startAR:"AR अनुभव शुरू करें",
+      gasLeak:"गैस लीक का पता चला", whatShouldYouDo:"आपको क्या करना चाहिए?",
+      continueWorking:"काम जारी रखें", reportEvacuate:"रिपोर्ट करें और खाली करें", removePPE:"PPE हटाएँ",
+      submitAnswer:"उत्तर सबमिट करें",
+      safetyAssessment:"सुरक्षा मूल्यांकन", questionOf:"प्रश्न 7 / 10",
+      assessQ:"खदान में गैस लीक होने पर सही कार्रवाई क्या है?",
+      continueOperation:"संचालन जारी रखें", evacuateArea:"क्षेत्र खाली करें", switchOffVentilation:"वेंटिलेशन बंद करें",
+      nextQuestion:"अगला प्रश्न →",
+      trainingComplete:"ट्रेनिंग पूर्ण हुई!",
+      resultDesc:"शानदार रेवंत! आपने खनन सुरक्षा मॉड्यूल सफलतापूर्वक पूरा कर लिया है।",
+      correctAnswers:"सही उत्तर", safetyDecisions:"सुरक्षा निर्णय", timeLabel:"समय",
+      safetyLevel:"सुरक्षा स्तर: उन्नत",
+      viewCertificate:"प्रमाणपत्र देखें", retakeModule:"मॉड्यूल दोबारा लें",
+      certificateTitle:"प्रमाणपत्र", certOf:"सुरक्षा प्रशिक्षण प्रमाणपत्र", certifies:"यह प्रमाणित करता है कि",
+      hasCompleted:"ने सफलतापूर्वक पूरा किया है", miningCourse:"खनन सुरक्षा AR ट्रेनिंग",
+      scoreLabel:"स्कोर:", certIdLabel:"प्रमाणपत्र आईडी:", scanToVerify:"सत्यापन हेतु स्कैन करें",
+      downloadCertificate:"↓ प्रमाणपत्र डाउनलोड करें", share:"⇪ शेयर करें",
+      verifyCertificateTitle:"प्रमाणपत्र सत्यापित करें", verifiedCertificate:"सत्यापित प्रमाणपत्र",
+      certId:"प्रमाणपत्र आईडी", trainee:"प्रशिक्षु", training:"प्रशिक्षण", scoreOnly:"स्कोर",
+      issued:"जारी किया गया", status:"स्थिति", authentic:"प्रामाणिक", adminView:"एडमिन व्यू",
+      adminDashboard:"एडमिन डैशबोर्ड", users:"उपयोगकर्ता", passRate:"पास दर", certificates:"प्रमाणपत्र",
+      needRetraining:"पुनः प्रशिक्षण आवश्यक", trainingPerformance:"प्रशिक्षण प्रदर्शन", emergency:"आपातकाल",
+      recentActivity:"हाल की गतिविधि", completedMining:"रेवंत कुमार ने खनन सुरक्षा पूर्ण की",
+      hoursAgo2:"2 घंटे पहले", newUserRegistered:"नया उपयोगकर्ता पंजीकृत", hoursAgo5:"5 घंटे पहले",
+      resetFlow:"↺ फ्लो रीसेट करें",
+      robotModalTitle:"अपने AI सुरक्षा और स्वास्थ्य सहायक से मिलें",
+      robotGreeting:"नमस्ते रेवंत! आज मैं आपकी कैसे मदद करूँ?",
+      modalSub:"तुरंत उत्तर, वॉइस सहायता और स्वास्थ्य सहायता कभी भी पाएँ।",
+      chatbotLanguageLabel:"चैटबॉट भाषा",
+      askSafetyQuestions:"सुरक्षा प्रश्न पूछें", askSafetyEx:'"गैस लीक कैसे संभालें?"',
+      checkHealth:"अपना स्वास्थ्य जाँचें", checkHealthEx:'"मुझे काम पर चक्कर आ रहे हैं"',
+      talkAssistant:"सहायक से बात करें", talkAssistantEx:'"माइक पर टैप करें और बोलें"',
+      startChatting:"चैट शुरू करें"
+    },
+    bn: {
+      chooseLanguage:"আপনার ভাষা নির্বাচন করুন", continue:"এগিয়ে যান →",
+      welcomeBack:"আবার স্বাগতম", loginToContinue:"চালিয়ে যেতে লগইন করুন",
+      emailPhone:"ইমেল / ফোন", password:"পাসওয়ার্ড", rememberMe:"আমাকে মনে রাখুন",
+      forgotPassword:"পাসওয়ার্ড ভুলে গেছেন?", login:"লগইন", orText:"অথবা",
+      dontHaveAccount:"অ্যাকাউন্ট নেই?", signUp:"সাইন আপ করুন",
+      greeting:"শুভ সকাল, রেভান্থ", readyToday:"আজকের সুরক্ষা প্রশিক্ষণের জন্য প্রস্তুত?",
+      yourProgress:"আপনার সুরক্ষা অগ্রগতি",
+      preScanTitle:"স্ক্যান-পূর্ব সুরক্ষা নির্দেশিকা",
+      rule1:"৩৬০° সু-আলোকিত পরিবেশ নিশ্চিত করুন",
+      rule2:"২ মিটার নিরাপদ ফাঁকা অঞ্চল বজায় রাখুন",
+      rule3:"স্ক্যান করার আগে বাধ্যতামূলক PPE পরীক্ষা করে পরুন",
+      arScannerTitle:"AR সুরক্ষা স্ক্যানার", arScannerDesc:"প্রশিক্ষণের জন্য আপনার চারপাশ স্ক্যান করুন", scanNow:"এখনই স্ক্যান করুন →",
+      trainingModules:"প্রশিক্ষণ মডিউল", viewAll:"সব দেখুন",
+      miningSafety:"খনি সুরক্ষা", manufacturingSafety:"উৎপাদন সুরক্ষা",
+      lessons4:"৪টি পাঠ", lessons6:"৬টি পাঠ",
+      tabHome:"হোম", tabTraining:"প্রশিক্ষণ", tabAssessment:"মূল্যায়ন", tabCertificates:"সার্টিফিকেট", tabProfile:"প্রোফাইল",
+      arScannerHeader:"AR স্ক্যানার", scanning:"স্ক্যান হচ্ছে…",
+      moveDevice:"আপনার ডিভাইসটি ধীরে ধীরে পরিবেশে সরান", surfaceDetected:"পৃষ্ঠ শনাক্ত হয়েছে",
+      startAR:"AR অভিজ্ঞতা শুরু করুন",
+      gasLeak:"গ্যাস লিক শনাক্ত হয়েছে", whatShouldYouDo:"আপনার কী করা উচিত?",
+      continueWorking:"কাজ চালিয়ে যান", reportEvacuate:"রিপোর্ট করুন এবং সরে যান", removePPE:"PPE খুলে ফেলুন",
+      submitAnswer:"উত্তর জমা দিন",
+      safetyAssessment:"সুরক্ষা মূল্যায়ন", questionOf:"প্রশ্ন ৭ / ১০",
+      assessQ:"খনিতে গ্যাস লিক হলে সঠিক পদক্ষেপ কী?",
+      continueOperation:"কার্যক্রম চালিয়ে যান", evacuateArea:"এলাকা খালি করুন", switchOffVentilation:"ভেন্টিলেশন বন্ধ করুন",
+      nextQuestion:"পরবর্তী প্রশ্ন →",
+      trainingComplete:"প্রশিক্ষণ সম্পন্ন!",
+      resultDesc:"চমৎকার রেভান্থ! আপনি খনি সুরক্ষা মডিউল সফলভাবে সম্পন্ন করেছেন।",
+      correctAnswers:"সঠিক উত্তর", safetyDecisions:"সুরক্ষা সিদ্ধান্ত", timeLabel:"সময়",
+      safetyLevel:"সুরক্ষা স্তর: উন্নত",
+      viewCertificate:"সার্টিফিকেট দেখুন", retakeModule:"মডিউল আবার নিন",
+      certificateTitle:"সার্টিফিকেট", certOf:"সুরক্ষা প্রশিক্ষণের সার্টিফিকেট", certifies:"এটি প্রত্যয়ন করে যে",
+      hasCompleted:"সফলভাবে সম্পন্ন করেছেন", miningCourse:"খনি সুরক্ষা AR প্রশিক্ষণ",
+      scoreLabel:"স্কোর:", certIdLabel:"সার্টিফিকেট আইডি:", scanToVerify:"যাচাই করতে স্ক্যান করুন",
+      downloadCertificate:"↓ সার্টিফিকেট ডাউনলোড করুন", share:"⇪ শেয়ার করুন",
+      verifyCertificateTitle:"সার্টিফিকেট যাচাই করুন", verifiedCertificate:"যাচাইকৃত সার্টিফিকেট",
+      certId:"সার্টিফিকেট আইডি", trainee:"প্রশিক্ষণার্থী", training:"প্রশিক্ষণ", scoreOnly:"স্কোর",
+      issued:"ইস্যু করা হয়েছে", status:"অবস্থা", authentic:"প্রামাণিক", adminView:"অ্যাডমিন ভিউ",
+      adminDashboard:"অ্যাডমিন ড্যাশবোর্ড", users:"ব্যবহারকারী", passRate:"পাস হার", certificates:"সার্টিফিকেট",
+      needRetraining:"পুনঃপ্রশিক্ষণ প্রয়োজন", trainingPerformance:"প্রশিক্ষণ কর্মক্ষমতা", emergency:"জরুরি",
+      recentActivity:"সাম্প্রতিক কার্যকলাপ", completedMining:"রেভান্থ কুমার খনি সুরক্ষা সম্পন্ন করেছেন",
+      hoursAgo2:"২ ঘণ্টা আগে", newUserRegistered:"নতুন ব্যবহারকারী নিবন্ধিত", hoursAgo5:"৫ ঘণ্টা আগে",
+      resetFlow:"↺ ফ্লো রিসেট করুন",
+      robotModalTitle:"আপনার AI সুরক্ষা ও স্বাস্থ্য সহায়কের সাথে পরিচিত হন",
+      robotGreeting:"হ্যালো রেভান্থ! আজ আমি কীভাবে সাহায্য করতে পারি?",
+      modalSub:"তাৎক্ষণিক উত্তর, ভয়েস সহায়তা এবং স্বাস্থ্য সহায়তা যেকোনো সময় পান।",
+      chatbotLanguageLabel:"চ্যাটবট ভাষা",
+      askSafetyQuestions:"সুরক্ষা প্রশ্ন জিজ্ঞাসা করুন", askSafetyEx:'"গ্যাস লিক কীভাবে সামলাবেন?"',
+      checkHealth:"আপনার স্বাস্থ্য পরীক্ষা করুন", checkHealthEx:'"কাজে মাথা ঘুরছে"',
+      talkAssistant:"সহায়কের সাথে কথা বলুন", talkAssistantEx:'"মাইকে ট্যাপ করুন ও বলুন"',
+      startChatting:"চ্যাট শুরু করুন"
+    },
+    /* Nagpuri, Khortha and Santhali are regional Jharkhand languages without
+       fully standardized digital keyboards for every UI term. We provide a
+       best-effort Devanagari-based rendering commonly used for these
+       languages in the region, falling back to Hindi phrasing where a
+       distinct standard term isn't widely established. */
+    nag: {
+      chooseLanguage:"अपन भाषा चुनीं", continue:"आगू बढ़ीं →",
+      welcomeBack:"वापसी पर स्वागत बा", loginToContinue:"जारी रखे खातिर लॉगिन करीं",
+      emailPhone:"ईमेल / फोन", password:"पासवर्ड", rememberMe:"हमके याद राखीं",
+      forgotPassword:"पासवर्ड भुला गइनी?", login:"लॉगिन करीं", orText:"या",
+      dontHaveAccount:"खाता नइखे?", signUp:"साइन अप करीं",
+      greeting:"सुप्रभात, रेवंत", readyToday:"आजु के सुरक्षा ट्रेनिंग खातिर तैयार बानी?",
+      yourProgress:"रउआ सुरक्षा प्रगति",
+      preScanTitle:"स्कैनिंग से पहिले के सुरक्षा नियम",
+      rule1:"360° सही रोशनी वाला जगह सुनिश्चित करीं",
+      rule2:"2-मीटर के सुरक्षित घेरा बनइले राखीं",
+      rule3:"स्कैन करे से पहिले जरूरी PPE जांच के पहिनीं",
+      arScannerTitle:"AR सुरक्षा स्कैनर", arScannerDesc:"ट्रेनिंग खातिर अपन आसपास स्कैन करीं", scanNow:"अबहीं स्कैन करीं →",
+      trainingModules:"ट्रेनिंग मॉड्यूल", viewAll:"सब देखीं",
+      miningSafety:"खनन सुरक्षा", manufacturingSafety:"निर्माण सुरक्षा",
+      lessons4:"4 पाठ", lessons6:"6 पाठ",
+      tabHome:"होम", tabTraining:"ट्रेनिंग", tabAssessment:"मूल्यांकन", tabCertificates:"प्रमाणपत्र", tabProfile:"प्रोफाइल",
+      arScannerHeader:"AR स्कैनर", scanning:"स्कैन हो रहल बा…",
+      moveDevice:"अपन डिवाइस के धीरे-धीरे घुमाईं", surfaceDetected:"सतह भेटाइल",
+      startAR:"AR अनुभव शुरू करीं",
+      gasLeak:"गैस लीक भेटाइल", whatShouldYouDo:"रउआ का करे के चाहीं?",
+      continueWorking:"काम जारी राखीं", reportEvacuate:"रिपोर्ट करीं आ बाहर निकलीं", removePPE:"PPE हटाईं",
+      submitAnswer:"उत्तर जमा करीं",
+      safetyAssessment:"सुरक्षा मूल्यांकन", questionOf:"प्रश्न 7 / 10",
+      assessQ:"खदान में गैस लीक होखला पर सही कदम का ह?",
+      continueOperation:"काम जारी राखीं", evacuateArea:"इलाका खाली करीं", switchOffVentilation:"वेंटिलेशन बंद करीं",
+      nextQuestion:"अगिला प्रश्न →",
+      trainingComplete:"ट्रेनिंग पूरा भइल!",
+      resultDesc:"बहुत बढ़िया रेवंत! रउआ खनन सुरक्षा मॉड्यूल पूरा कर लिहनी।",
+      correctAnswers:"सही उत्तर", safetyDecisions:"सुरक्षा फैसला", timeLabel:"समय",
+      safetyLevel:"सुरक्षा स्तर: उन्नत",
+      viewCertificate:"प्रमाणपत्र देखीं", retakeModule:"फेर से मॉड्यूल करीं",
+      certificateTitle:"प्रमाणपत्र", certOf:"सुरक्षा प्रशिक्षण प्रमाणपत्र", certifies:"ई प्रमाणित करेला कि",
+      hasCompleted:"सफलतापूर्वक पूरा कइले बानी", miningCourse:"खनन सुरक्षा AR ट्रेनिंग",
+      scoreLabel:"स्कोर:", certIdLabel:"प्रमाणपत्र आईडी:", scanToVerify:"सत्यापन खातिर स्कैन करीं",
+      downloadCertificate:"↓ प्रमाणपत्र डाउनलोड करीं", share:"⇪ शेयर करीं",
+      verifyCertificateTitle:"प्रमाणपत्र सत्यापित करीं", verifiedCertificate:"सत्यापित प्रमाणपत्र",
+      certId:"प्रमाणपत्र आईडी", trainee:"प्रशिक्षु", training:"प्रशिक्षण", scoreOnly:"स्कोर",
+      issued:"जारी भइल", status:"स्थिति", authentic:"प्रामाणिक", adminView:"एडमिन व्यू",
+      adminDashboard:"एडमिन डैशबोर्ड", users:"उपयोगकर्ता", passRate:"पास दर", certificates:"प्रमाणपत्र",
+      needRetraining:"फेर से ट्रेनिंग जरूरी", trainingPerformance:"ट्रेनिंग प्रदर्शन", emergency:"आपातकाल",
+      recentActivity:"हाल के गतिविधि", completedMining:"रेवंत कुमार खनन सुरक्षा पूरा कइले बानी",
+      hoursAgo2:"2 घंटा पहिले", newUserRegistered:"नया उपयोगकर्ता पंजीकृत", hoursAgo5:"5 घंटा पहिले",
+      resetFlow:"↺ फ्लो रीसेट करीं",
+      robotModalTitle:"अपन AI सुरक्षा आ स्वास्थ्य सहायक से मिलीं",
+      robotGreeting:"नमस्ते रेवंत! आजु हम रउआ के कइसे मदद करीं?",
+      modalSub:"तुरंत जवाब, आवाज सहायता आ स्वास्थ्य सहायता कबो पाईं।",
+      chatbotLanguageLabel:"चैटबॉट भाषा",
+      askSafetyQuestions:"सुरक्षा सवाल पूछीं", askSafetyEx:'"गैस लीक कइसे संभालल जाला?"',
+      checkHealth:"अपन सेहत जांचीं", checkHealthEx:'"काम पर चक्कर आवत बा"',
+      talkAssistant:"सहायक से बात करीं", talkAssistantEx:'"माइक दबाईं आ बोलीं"',
+      startChatting:"चैट शुरू करीं"
+    },
+    kho: {
+      chooseLanguage:"अपन भाषा छांटअ", continue:"आगू बढ़अ →",
+      welcomeBack:"फिनु स्वागत छउ", loginToContinue:"जारी रखे लेल लॉगिन करअ",
+      emailPhone:"ईमेल / फोन", password:"पासवर्ड", rememberMe:"हमरा याद राखअ",
+      forgotPassword:"पासवर्ड बिसैर गेलअ?", login:"लॉगिन करअ", orText:"या",
+      dontHaveAccount:"खाता नाई छउ?", signUp:"साइन अप करअ",
+      greeting:"सुप्रभात, रेवंत", readyToday:"आजके सुरक्षा ट्रेनिंग लेल तैयार छअ?",
+      yourProgress:"तोहर सुरक्षा प्रगति",
+      preScanTitle:"स्कैनिंग से पहिले के सुरक्षा नियम",
+      rule1:"360° सही उजियार वाला परिवेश सुनिश्चित करअ",
+      rule2:"2-मीटर के सुरक्षित इलाका बनाय राखअ",
+      rule3:"स्कैन करे से पहिले जरूरी PPE जांच क पहिनअ",
+      arScannerTitle:"AR सुरक्षा स्कैनर", arScannerDesc:"ट्रेनिंग लेल अपन चारो कात स्कैन करअ", scanNow:"अखनहि स्कैन करअ →",
+      trainingModules:"ट्रेनिंग मॉड्यूल", viewAll:"सब देखअ",
+      miningSafety:"खनन सुरक्षा", manufacturingSafety:"निर्माण सुरक्षा",
+      lessons4:"4 पाठ", lessons6:"6 पाठ",
+      tabHome:"होम", tabTraining:"ट्रेनिंग", tabAssessment:"मूल्यांकन", tabCertificates:"प्रमाणपत्र", tabProfile:"प्रोफाइल",
+      arScannerHeader:"AR स्कैनर", scanning:"स्कैन होय रहल छउ…",
+      moveDevice:"अपन डिवाइस के धीरे-धीरे घुमाबअ", surfaceDetected:"सतह भेट गेल",
+      startAR:"AR अनुभव शुरू करअ",
+      gasLeak:"गैस लीक भेटाइल", whatShouldYouDo:"तोरा का करे के चाही?",
+      continueWorking:"काम जारी राखअ", reportEvacuate:"रिपोर्ट करअ आर बाहर होबअ", removePPE:"PPE हटाबअ",
+      submitAnswer:"उत्तर जमा करअ",
+      safetyAssessment:"सुरक्षा मूल्यांकन", questionOf:"प्रश्न 7 / 10",
+      assessQ:"खदान में गैस लीक होला पर सही कदम का छी?",
+      continueOperation:"काम जारी राखअ", evacuateArea:"इलाका खाली करअ", switchOffVentilation:"वेंटिलेशन बंद करअ",
+      nextQuestion:"अगिला प्रश्न →",
+      trainingComplete:"ट्रेनिंग पूरा भेल!",
+      resultDesc:"बहुत बढ़िया रेवंत! तोहं खनन सुरक्षा मॉड्यूल पूरा क लेलअ।",
+      correctAnswers:"सही उत्तर", safetyDecisions:"सुरक्षा फैसला", timeLabel:"समय",
+      safetyLevel:"सुरक्षा स्तर: उन्नत",
+      viewCertificate:"प्रमाणपत्र देखअ", retakeModule:"फिनु मॉड्यूल करअ",
+      certificateTitle:"प्रमाणपत्र", certOf:"सुरक्षा प्रशिक्षण प्रमाणपत्र", certifies:"एहि से प्रमाणित होयत छी कि",
+      hasCompleted:"सफलतापूर्वक पूरा केलक छी", miningCourse:"खनन सुरक्षा AR ट्रेनिंग",
+      scoreLabel:"स्कोर:", certIdLabel:"प्रमाणपत्र आईडी:", scanToVerify:"सत्यापन लेल स्कैन करअ",
+      downloadCertificate:"↓ प्रमाणपत्र डाउनलोड करअ", share:"⇪ शेयर करअ",
+      verifyCertificateTitle:"प्रमाणपत्र सत्यापित करअ", verifiedCertificate:"सत्यापित प्रमाणपत्र",
+      certId:"प्रमाणपत्र आईडी", trainee:"प्रशिक्षु", training:"प्रशिक्षण", scoreOnly:"स्कोर",
+      issued:"जारी भेल", status:"स्थिति", authentic:"प्रामाणिक", adminView:"एडमिन व्यू",
+      adminDashboard:"एडमिन डैशबोर्ड", users:"उपयोगकर्ता", passRate:"पास दर", certificates:"प्रमाणपत्र",
+      needRetraining:"फिनु ट्रेनिंग जरूरी", trainingPerformance:"ट्रेनिंग प्रदर्शन", emergency:"आपातकाल",
+      recentActivity:"हाल के गतिविधि", completedMining:"रेवंत कुमार खनन सुरक्षा पूरा केलक छी",
+      hoursAgo2:"2 घंटा पहिले", newUserRegistered:"नया उपयोगकर्ता पंजीकृत", hoursAgo5:"5 घंटा पहिले",
+      resetFlow:"↺ फ्लो रीसेट करअ",
+      robotModalTitle:"अपन AI सुरक्षा आर स्वास्थ्य सहायक से मिलअ",
+      robotGreeting:"नमस्कार रेवंत! आजु हम तोरा कइसे मदद करी?",
+      modalSub:"तुरंत जवाब, आवाज सहायता आर स्वास्थ्य सहायता कखनो पाबअ।",
+      chatbotLanguageLabel:"चैटबॉट भाषा",
+      askSafetyQuestions:"सुरक्षा सवाल पूछअ", askSafetyEx:'"गैस लीक कइसे संभालल जाय?"',
+      checkHealth:"अपन सेहत जांचअ", checkHealthEx:'"काम पर चक्कर आबय छउ"',
+      talkAssistant:"सहायक से बात करअ", talkAssistantEx:'"माइक दबाबअ आर बोलअ"',
+      startChatting:"चैट शुरू करअ"
+    },
+    sat: {
+      chooseLanguage:"आपे रोड़ आयदा", continue:"सेंगेल →",
+      welcomeBack:"फिर बापला", loginToContinue:"सेंगेल के लागित लॉगिन मे",
+      emailPhone:"ईमेल / फोन", password:"पासवर्ड", rememberMe:"इंजाक् उम्दा",
+      forgotPassword:"पासवर्ड हेराव कान?", login:"लॉगिन", orText:"बा",
+      dontHaveAccount:"खाता बांउक?", signUp:"साइन अप",
+      greeting:"मरसाल जोहार, रेवंत", readyToday:"तिनाग सुरक्षा प्रशिक्षण लागित सज्जित मेनाम?",
+      yourProgress:"आम सुरक्षा गति",
+      preScanTitle:"स्कैन-आगु सुरक्षा नियम",
+      rule1:"360° बेस पोरोक ठाईं निश्चित मे",
+      rule2:"2-मीटर सुरक्षित बांह राखा मे",
+      rule3:"स्कैन आगे PPE सेनेज ओड़ोक मे",
+      arScannerTitle:"AR सुरक्षा स्कैनर", arScannerDesc:"प्रशिक्षण लागित आम गिरेह स्कैन मे", scanNow:"नितोक स्कैन मे →",
+      trainingModules:"प्रशिक्षण मॉड्यूल", viewAll:"सबेन नेल",
+      miningSafety:"खनन सुरक्षा", manufacturingSafety:"निर्माण सुरक्षा",
+      lessons4:"4 पाठ", lessons6:"6 पाठ",
+      tabHome:"ओड़ाक़", tabTraining:"प्रशिक्षण", tabAssessment:"मूल्यांकन", tabCertificates:"प्रमाणपत्र", tabProfile:"प्रोफाइल",
+      arScannerHeader:"AR स्कैनर", scanning:"स्कैन होचोक…",
+      moveDevice:"आम डिवाइस के लाहा-लाहा घूराव मे", surfaceDetected:"सतह नामकाना",
+      startAR:"AR अनुभव सेंगेल",
+      gasLeak:"गैस लीक नामकाना", whatShouldYouDo:"आम चेत काम मे?",
+      continueWorking:"काम जारी मे", reportEvacuate:"रिपोर्ट आर बाहेर मे", removePPE:"PPE आबुड़ मे",
+      submitAnswer:"उत्तर सोंगोड़ मे",
+      safetyAssessment:"सुरक्षा मूल्यांकन", questionOf:"प्रश्न 7 / 10",
+      assessQ:"खदान रे गैस लीक ठार सही काम चेत?",
+      continueOperation:"काम जारी मे", evacuateArea:"ठाईं आबुड़ मे", switchOffVentilation:"वेंटिलेशन बंद मे",
+      nextQuestion:"आर प्रश्न →",
+      trainingComplete:"प्रशिक्षण सेरेंज!",
+      resultDesc:"बेस रेवंत! आम खनन सुरक्षा मॉड्यूल सेरेंज मेतांआ।",
+      correctAnswers:"सही उत्तर", safetyDecisions:"सुरक्षा निर्णय", timeLabel:"वखत",
+      safetyLevel:"सुरक्षा स्तर: उन्नत",
+      viewCertificate:"प्रमाणपत्र नेल", retakeModule:"फिर मॉड्यूल मे",
+      certificateTitle:"प्रमाणपत्र", certOf:"सुरक्षा प्रशिक्षण प्रमाणपत्र", certifies:"नोवा प्रमाणित काना कि",
+      hasCompleted:"सफलतापूर्वक सेरेंज काना", miningCourse:"खनन सुरक्षा AR प्रशिक्षण",
+      scoreLabel:"स्कोर:", certIdLabel:"प्रमाणपत्र आईडी:", scanToVerify:"सत्यापन लागित स्कैन मे",
+      downloadCertificate:"↓ प्रमाणपत्र डाउनलोड मे", share:"⇪ शेयर मे",
+      verifyCertificateTitle:"प्रमाणपत्र सत्यापित मे", verifiedCertificate:"सत्यापित प्रमाणपत्र",
+      certId:"प्रमाणपत्र आईडी", trainee:"प्रशिक्षु", training:"प्रशिक्षण", scoreOnly:"स्कोर",
+      issued:"जारी काना", status:"स्थिति", authentic:"प्रामाणिक", adminView:"एडमिन व्यू",
+      adminDashboard:"एडमिन डैशबोर्ड", users:"उपयोगकर्ता", passRate:"पास दर", certificates:"प्रमाणपत्र",
+      needRetraining:"फिर प्रशिक्षण जरूरी", trainingPerformance:"प्रशिक्षण प्रदर्शन", emergency:"आपातकाल",
+      recentActivity:"नितोक गतिविधि", completedMining:"रेवंत कुमार खनन सुरक्षा सेरेंज काना",
+      hoursAgo2:"2 घंटा आगु", newUserRegistered:"नावा उपयोगकर्ता पंजीकृत", hoursAgo5:"5 घंटा आगु",
+      resetFlow:"↺ फ्लो रीसेट मे",
+      robotModalTitle:"आम AI सुरक्षा आर स्वास्थ्य सहायक ठेन नामकाना",
+      robotGreeting:"जोहार रेवंत! तिनाग हां चेत गे मदद मे?",
+      modalSub:"नितोक उत्तर, आवाज सहायता आर स्वास्थ्य सहायता जखनो नामाम।",
+      chatbotLanguageLabel:"चैटबॉट रोड़",
+      askSafetyQuestions:"सुरक्षा प्रश्न कुली", askSafetyEx:'"गैस लीक चेत गे सम्भाल?"',
+      checkHealth:"आम सेहत सेनेज", checkHealthEx:'"काम रे चक्कर आना"',
+      talkAssistant:"सहायक ठेन रोड़", talkAssistantEx:'"माइक ठापा आर रोड़"',
+      startChatting:"चैट सेंगेल"
+    }
+  };
+
+  let currentLang = 'en';
+
+  function applyLanguage(lang){
+    currentLang = lang;
+    const dict = translations[lang] || translations.en;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if(dict[key] !== undefined){
+        el.textContent = dict[key];
+      } else if(translations.en[key] !== undefined){
+        el.textContent = translations.en[key];
+      }
+    });
+  }
+
+  // ---------- SCREEN NAVIGATION ----------
+  function goTo(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.getElementById('app').scrollTop = 0;
+    const body = document.querySelector('#' + id + ' .scr-body');
+    if(body) body.scrollTop = 0;
+  }
+
+  function resetFlow(){
+    goTo('s1');
+  }
+
+  // ---------- SELECTABLE OPTION GROUPS ----------
+  function wireSelectGroup(containerId, rowSelector, onSelect){
+    const container = document.getElementById(containerId);
+    if(!container) return;
+    container.querySelectorAll(rowSelector).forEach(row => {
+      row.addEventListener('click', () => {
+        container.querySelectorAll(rowSelector).forEach(r => r.classList.remove('selected'));
+        row.classList.add('selected');
+        if(onSelect) onSelect(row);
+      });
+    });
+  }
+
+  wireSelectGroup('langList', '.option-row', (row) => {
+    const lang = row.getAttribute('data-lang');
+    applyLanguage(lang);
+    // keep the chatbot language selector in sync with the app language
+    const sel = document.getElementById('chatbotLangSelect');
+    if(sel) sel.value = lang;
+  });
+  wireSelectGroup('s5choices', '.choice-row');
+  wireSelectGroup('s6choices', '.choice-row');
+
+  // ---------- AI ASSISTANT MODAL ----------
+  const robotFab = document.getElementById('robotFab');
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalClose = document.getElementById('modalClose');
+  const startChatBtn = document.getElementById('startChatBtn');
+  const chatbotLangSelect = document.getElementById('chatbotLangSelect');
+
+  function openModal(){ modalOverlay.classList.add('open'); }
+  function closeModal(){ modalOverlay.classList.remove('open'); }
+
+  robotFab.addEventListener('click', openModal);
+  modalClose.addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', (e) => {
+    if(e.target === modalOverlay) closeModal();
+  });
+  startChatBtn.addEventListener('click', closeModal);
+
+  chatbotLangSelect.addEventListener('change', (e) => {
+    // The chatbot language selector re-renders just the modal's own text
+    // in the chosen language, independent of the rest of the app.
+    const dict = translations[e.target.value] || translations.en;
+    document.querySelectorAll('.assist-modal [data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if(dict[key] !== undefined) el.textContent = dict[key];
+    });
+  });
+
+  // ---------- LIVE CLOCK IN STATUS BAR ----------
+  function updateClock(){
+    const now = new Date();
+    let h = now.getHours();
+    const m = now.getMinutes().toString().padStart(2,'0');
+    h = h % 12; if(h === 0) h = 12;
+    document.querySelector('#statusbar span:first-child').textContent = h + ':' + m;
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+</script>
+
+</body>
+</html>
